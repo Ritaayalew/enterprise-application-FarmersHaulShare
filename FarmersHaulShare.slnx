@@ -1,0 +1,48 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/BatchPostingAndGrouping/">
+    <Project Path="src/Modules/BatchPostingAndGrouping/BatchPostingAndGrouping.Api/BatchPostingAndGrouping.Api.csproj" />
+    <Project Path="src/Modules/BatchPostingAndGrouping/BatchPostingAndGrouping.Application/BatchPostingAndGrouping.Application.csproj" />
+    <Project Path="src/Modules/BatchPostingAndGrouping/BatchPostingAndGrouping.Domain/BatchPostingAndGrouping.Domain.csproj" />
+    <Project Path="src/Modules/BatchPostingAndGrouping/BatchPostingAndGrouping.Infrastructure/BatchPostingAndGrouping.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/CatalogAndContracts/">
+    <Project Path="src/Modules/CatalogAndContracts/CatalogAndContracts.Api/CatalogAndContracts.Api.csproj" />
+    <Project Path="src/Modules/CatalogAndContracts/CatalogAndContracts.Application/CatalogAndContracts.Application.csproj" />
+    <Project Path="src/Modules/CatalogAndContracts/CatalogAndContracts.Domain/CatalogAndContracts.Domain.csproj" />
+    <Project Path="src/Modules/CatalogAndContracts/CatalogAndContracts.Infrastructure/CatalogAndContracts.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/HaulShareCreationAndScheduling/">
+    <Project Path="src/Modules/HaulShareCreationAndScheduling/HaulShareCreationAndScheduling.Api/HaulShareCreationAndScheduling.Api.csproj" />
+    <Project Path="src/Modules/HaulShareCreationAndScheduling/HaulShareCreationAndScheduling.Application/HaulShareCreationAndScheduling.Application.csproj" />
+    <Project Path="src/Modules/HaulShareCreationAndScheduling/HaulShareCreationAndScheduling.Domain/HaulShareCreationAndScheduling.Domain.csproj" />
+    <Project Path="src/Modules/HaulShareCreationAndScheduling/HaulShareCreationAndScheduling.Infrastructure/HaulShareCreationAndScheduling.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/IdentityAndAccessManagement/">
+    <Project Path="src/Modules/IdentityAndAccessManagement/IdentityAndAccessManagement.Api/IdentityAndAccessManagement.Api.csproj" />
+    <Project Path="src/Modules/IdentityAndAccessManagement/IdentityAndAccessManagement.Application/IdentityAndAccessManagement.Application.csproj" />
+    <Project Path="src/Modules/IdentityAndAccessManagement/IdentityAndAccessManagement.Domain/IdentityAndAccessManagement.Domain.csproj" />
+    <Project Path="src/Modules/IdentityAndAccessManagement/IdentityAndAccessManagement.Infrastructure/IdentityAndAccessManagement.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/MessagingAndNotifications/">
+    <Project Path="src/Modules/MessagingAndNotifications/MessagingAndNotifications.Api/MessagingAndNotifications.Api.csproj" />
+    <Project Path="src/Modules/MessagingAndNotifications/MessagingAndNotifications.Application/MessagingAndNotifications.Application.csproj" />
+    <Project Path="src/Modules/MessagingAndNotifications/MessagingAndNotifications.Domain/MessagingAndNotifications.Domain.csproj" />
+    <Project Path="src/Modules/MessagingAndNotifications/MessagingAndNotifications.Infrastructure/MessagingAndNotifications.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/PricingAndFairCostSplit/">
+    <Project Path="src/Modules/PricingAndFairCostSplit/PricingAndFairCostSplit.Api/PricingAndFairCostSplit.Api.csproj" />
+    <Project Path="src/Modules/PricingAndFairCostSplit/PricingAndFairCostSplit.Application/PricingAndFairCostSplit.Application.csproj" />
+    <Project Path="src/Modules/PricingAndFairCostSplit/PricingAndFairCostSplit.Domain/PricingAndFairCostSplit.Domain.csproj" />
+    <Project Path="src/Modules/PricingAndFairCostSplit/PricingAndFairCostSplit.Infrastructure/PricingAndFairCostSplit.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/TransportMarketplaceAndDispatch/">
+    <Project Path="src/Modules/TransportMarketplaceAndDispatch/TransportMarketplaceAndDispatch.Api/TransportMarketplaceAndDispatch.Api.csproj" />
+    <Project Path="src/Modules/TransportMarketplaceAndDispatch/TransportMarketplaceAndDispatch.Application/TransportMarketplaceAndDispatch.Application.csproj" />
+    <Project Path="src/Modules/TransportMarketplaceAndDispatch/TransportMarketplaceAndDispatch.Domain/TransportMarketplaceAndDispatch.Domain.csproj" />
+    <Project Path="src/Modules/TransportMarketplaceAndDispatch/TransportMarketplaceAndDispatch.Infrastructure/TransportMarketplaceAndDispatch.Infrastructure.csproj" />
+  </Folder>
+  <Project Path="CompositionRoot/CompositionRoot.csproj" />
+  <Project Path="SharedKernel/SharedKernel.csproj" />
+</Solution>
