@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\FarmersHaulShare.BatchPosting.Domain\FarmersHaulShare.BatchPosting.Domain.csproj" />
+    <ProjectReference Include="..\FarmersHaulShare.SharedKernel\FarmersHaulShare.SharedKernel.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="FarmersHaulShare.Api/FarmersHaulShare.Api.csproj" />
+  <Project Path="FarmersHaulShare.BatchPosting.Application/FarmersHaulShare.BatchPosting.Application.csproj" />
+  <Project Path="FarmersHaulShare.BatchPosting.Domain/FarmersHaulShare.BatchPosting.Domain.csproj" />
+  <Project Path="FarmersHaulShare.BatchPosting.Infrastructure/FarmersHaulShare.BatchPosting.Infrastructure.csproj" />
+  <Project Path="FarmersHaulShare.SharedKernel/FarmersHaulShare.SharedKernel.csproj" />
+</Solution>
