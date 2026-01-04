@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Disable parallel project builds to eliminate MSB3030 race condition -->
+    <MaxCpuCount>1</MaxCpuCount>
+  </PropertyGroup>
+</Project>
