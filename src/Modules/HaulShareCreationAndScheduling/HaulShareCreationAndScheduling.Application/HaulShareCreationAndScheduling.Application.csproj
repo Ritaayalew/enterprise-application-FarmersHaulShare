@@ -2,11 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-     <GenerateMSBuildEditorConfigFile>false</GenerateMSBuildEditorConfigFile>
-     <EnableRazor>false</EnableRazor>
-
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
 </Project>
