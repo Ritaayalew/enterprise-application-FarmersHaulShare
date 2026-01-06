@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 
 namespace FarmersHaulShare.SharedKernel;
 
@@ -25,13 +26,18 @@ public class OutboxMessage
         Failed
     }
 
-    // EF Core needs parameterless constructor
+    // Parameterless constructor required by EF Core
     private OutboxMessage() { }
 
-    public OutboxMessage(string eventType, object @event)
+    // Constructor used when saving from SaveChangesAsync
+    public OutboxMessage(object domainEvent)
     {
-        EventType = eventType;
-        Payload = System.Text.Json.JsonSerializer.Serialize(@event);
+        if (domainEvent == null) throw new ArgumentNullException(nameof(domainEvent));
+
+        var type = domainEvent.GetType();
+        EventType = $"{type.FullName}, {type.Assembly.GetName().Name}";
+        Payload = JsonSerializer.Serialize(domainEvent, type);
+        OccurredOn = DateTime.UtcNow;
     }
 
     public void MarkAsPublished()

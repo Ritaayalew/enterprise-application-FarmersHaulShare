@@ -1,0 +1,12 @@
+C:\Users\user\Desktop\esd\enterprise-application-FarmersHaulShare\FarmersHaulShare.SharedKernel\bin\Debug\net10.0\FarmersHaulShare.SharedKernel.deps.json
+C:\Users\user\Desktop\esd\enterprise-application-FarmersHaulShare\FarmersHaulShare.SharedKernel\bin\Debug\net10.0\FarmersHaulShare.SharedKernel.dll
+C:\Users\user\Desktop\esd\enterprise-application-FarmersHaulShare\FarmersHaulShare.SharedKernel\bin\Debug\net10.0\FarmersHaulShare.SharedKernel.pdb
+C:\Users\user\Desktop\esd\enterprise-application-FarmersHaulShare\FarmersHaulShare.SharedKernel\obj\Debug\net10.0\FarmersHaulShare.SharedKernel.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\user\Desktop\esd\enterprise-application-FarmersHaulShare\FarmersHaulShare.SharedKernel\obj\Debug\net10.0\FarmersHaulShare.SharedKernel.AssemblyInfoInputs.cache
+C:\Users\user\Desktop\esd\enterprise-application-FarmersHaulShare\FarmersHaulShare.SharedKernel\obj\Debug\net10.0\FarmersHaulShare.SharedKernel.AssemblyInfo.cs
+C:\Users\user\Desktop\esd\enterprise-application-FarmersHaulShare\FarmersHaulShare.SharedKernel\obj\Debug\net10.0\FarmersHaulShare.SharedKernel.csproj.CoreCompileInputs.cache
+C:\Users\user\Desktop\esd\enterprise-application-FarmersHaulShare\FarmersHaulShare.SharedKernel\obj\Debug\net10.0\FarmersHaulShare.SharedKernel.sourcelink.json
+C:\Users\user\Desktop\esd\enterprise-application-FarmersHaulShare\FarmersHaulShare.SharedKernel\obj\Debug\net10.0\FarmersHaulShare.SharedKernel.dll
+C:\Users\user\Desktop\esd\enterprise-application-FarmersHaulShare\FarmersHaulShare.SharedKernel\obj\Debug\net10.0\refint\FarmersHaulShare.SharedKernel.dll
+C:\Users\user\Desktop\esd\enterprise-application-FarmersHaulShare\FarmersHaulShare.SharedKernel\obj\Debug\net10.0\FarmersHaulShare.SharedKernel.pdb
+C:\Users\user\Desktop\esd\enterprise-application-FarmersHaulShare\FarmersHaulShare.SharedKernel\obj\Debug\net10.0\ref\FarmersHaulShare.SharedKernel.dll
