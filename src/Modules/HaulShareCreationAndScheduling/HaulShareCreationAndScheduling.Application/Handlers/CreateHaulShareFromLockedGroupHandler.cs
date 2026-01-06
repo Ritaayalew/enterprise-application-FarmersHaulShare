@@ -31,9 +31,10 @@ public class CreateHaulShareFromLockedGroupHandler
         var totalWeight = pickupStops.Sum(p => p.WeightKg);
 
         var capacityPlan = new CapacityPlan(
-            totalWeight,
-            maxWeightKg: 3000
-        );
+    totalWeight,
+    3000
+);
+
 
         if (!capacityPlan.Fits())
             throw new InvalidOperationException("Vehicle capacity exceeded.");
