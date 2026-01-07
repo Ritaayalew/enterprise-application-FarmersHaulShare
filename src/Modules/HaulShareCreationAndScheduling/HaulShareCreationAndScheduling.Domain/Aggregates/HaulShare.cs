@@ -15,10 +15,11 @@ public class HaulShare
     public DeliveryWindow DeliveryWindow { get; private set; }
     public CapacityPlan CapacityPlan { get; private set; }
 
+    // ✅ Backing field for EF Core
     private readonly List<PickupStop> _pickupStops = new();
     public IReadOnlyCollection<PickupStop> PickupStops => _pickupStops.AsReadOnly();
 
-    private HaulShare() { } // EF
+    private HaulShare() { } // ✅ EF Core
 
     public HaulShare(
         Guid id,

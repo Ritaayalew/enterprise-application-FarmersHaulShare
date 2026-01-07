@@ -1,9 +1,11 @@
-namespace HaulShareCreationAndScheduling.Domain.ValueObjects;
+ namespace HaulShareCreationAndScheduling.Domain.ValueObjects;
 
 public sealed class DeliveryWindow
 {
-    public DateTime Earliest { get; }
-    public DateTime Latest { get; }
+    public DateTime Earliest { get; private set; }
+    public DateTime Latest { get; private set; }
+
+    private DeliveryWindow() { } // ✅ REQUIRED by EF Core
 
     public DeliveryWindow(DateTime earliest, DateTime latest)
     {
