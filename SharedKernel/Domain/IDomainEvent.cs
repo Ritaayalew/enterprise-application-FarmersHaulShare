@@ -2,5 +2,5 @@ namespace SharedKernel.Domain;
 
 public interface IDomainEvent
 {
-    DateTime OccurredOnUtc { get; }
+    DateTime OccurredOn { get; }
 }
