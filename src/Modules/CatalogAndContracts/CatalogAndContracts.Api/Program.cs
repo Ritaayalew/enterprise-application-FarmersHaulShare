@@ -50,5 +50,4 @@ app.MapGet("/protected", [Authorize] () => $"Welcome! You are authenticated.");
 app.MapGet("/farmer-only", [Authorize(Policy = "Farmer")] () => "Hello Farmer! 🌾");
 app.MapGet("/driver-only", [Authorize(Policy = "Driver")] () => "Hello Driver! 🚛");
 app.MapGet("/coordinator-only", [Authorize(Policy = "Coordinator")] () => "Hello Coordinator! 👨‍💼");
-
 app.Run();
