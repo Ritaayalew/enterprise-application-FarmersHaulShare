@@ -13,6 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BatchPostingAndGrouping.Application\BatchPostingAndGrouping.Application.csproj" />
+    <ProjectReference Include="..\BatchPostingAndGrouping.Infrastructure\BatchPostingAndGrouping.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\..\SharedKernel\SharedKernel.csproj" />
   </ItemGroup>
 
