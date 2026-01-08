@@ -1,4 +1,4 @@
-using SharedKernel.Domain;
+using FarmersHaulShare.SharedKernel.Domain;
 
 namespace BatchPostingAndGrouping.Domain.DomainEvents;
 
@@ -14,7 +14,7 @@ public sealed record BatchPosted : IDomainEvent
     public double Latitude { get; init; }
     public double Longitude { get; init; }
     public DateTime ReadyDateUtc { get; init; }
-    public DateTime OccurredOnUtc { get; init; }
+    public DateTime OccurredOn { get; init; }
 
     private BatchPosted() { } // For deserialization
 
@@ -34,6 +34,6 @@ public sealed record BatchPosted : IDomainEvent
         Latitude = latitude;
         Longitude = longitude;
         ReadyDateUtc = readyDateUtc;
-        OccurredOnUtc = DateTime.UtcNow;
+        OccurredOn = DateTime.UtcNow;
     }
 }

@@ -1,4 +1,4 @@
-using SharedKernel.Domain;
+using FarmersHaulShare.SharedKernel.Domain;
 
 namespace BatchPostingAndGrouping.Domain.DomainEvents;
 
@@ -11,7 +11,7 @@ public sealed record GroupCandidateLocked : IDomainEvent
     public List<Guid> BatchIds { get; init; } = new();
     public DateTime LockWindowStartUtc { get; init; }
     public DateTime LockWindowEndUtc { get; init; }
-    public DateTime OccurredOnUtc { get; init; }
+    public DateTime OccurredOn { get; init; }
 
     private GroupCandidateLocked() { } // For deserialization
 
@@ -28,6 +28,6 @@ public sealed record GroupCandidateLocked : IDomainEvent
         BatchIds = batchIds;
         LockWindowStartUtc = lockWindowStartUtc;
         LockWindowEndUtc = lockWindowEndUtc;
-        OccurredOnUtc = DateTime.UtcNow;
+        OccurredOn = DateTime.UtcNow;
     }
 }
