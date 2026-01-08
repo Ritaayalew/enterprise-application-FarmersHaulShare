@@ -31,7 +31,7 @@ public sealed class BatchesController : ControllerBase
     {
         try
         {
-            // Get farmer profile ID from claims (assuming it's in the token)
+            // Get farmer profile ID from claims 
             // For now, we'll use a claim or header - adjust based on your identity setup
             var farmerProfileIdClaim = User.FindFirst("farmer_profile_id")?.Value
                 ?? User.FindFirst("sub")?.Value // Fallback to subject claim
