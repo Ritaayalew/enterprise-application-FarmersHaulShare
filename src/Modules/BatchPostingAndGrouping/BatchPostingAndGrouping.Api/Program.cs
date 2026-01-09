@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IClaimsTransformation, SharedKernel.ClaimsTransformer>();
 
@@ -63,17 +63,17 @@ builder.Services.AddScoped<IGroupingService, GroupingService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    
-    // Ensure database is created (in development only)
-    using var scope = app.Services.CreateScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<BatchPostingDbContext>();
-    await dbContext.Database.EnsureCreatedAsync();
-}
+// // Configure the HTTP request pipeline
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI();
+
+//     // Ensure database is created (in development only)
+//     using var scope = app.Services.CreateScope();
+//     var dbContext = scope.ServiceProvider.GetRequiredService<BatchPostingDbContext>();
+//     await dbContext.Database.EnsureCreatedAsync();
+// }
 
 app.UseAuthentication();
 app.UseAuthorization();
