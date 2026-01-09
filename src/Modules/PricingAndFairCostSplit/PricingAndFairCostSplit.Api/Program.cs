@@ -6,9 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 
 using PricingAndFairCostSplit.Application.Services;
 using PricingAndFairCostSplit.Application.Interfaces;
-
 using PricingAndFairCostSplit.Infrastructure;
 using PricingAndFairCostSplit.Infrastructure.Repositories;
+using PricingAndFairCostSplit.Application.Commands;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,9 +52,11 @@ builder.Services.AddAuthorization(options =>
 });
 
 // --------------------
-// Controllers
+// Controllers & Swagger
 // --------------------
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // --------------------
 // EF Core (In-Memory for now)
@@ -67,33 +69,28 @@ builder.Services.AddDbContext<PricingDbContext>(options =>
 // --------------------
 // Dependency Injection
 // --------------------
-
-// Domain repository → Infrastructure implementation
 builder.Services.AddScoped<IFairCostSplitRepository, FairCostSplitRepository>();
-
-// Application service
 builder.Services.AddScoped<IFairPricingAppService, FairPricingAppService>();
-builder.Services.AddEndpointsApiExplorer(); // Needed for minimal APIs
-builder.Services.AddSwaggerGen();
-
 
 var app = builder.Build();
+
+// --------------------
+// Swagger in Development
+// --------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pricing & Fair Cost Split API v1");
-        c.RoutePrefix = string.Empty; 
+        c.RoutePrefix = string.Empty; // Swagger at root
     });
 }
-
 
 // --------------------
 // Middleware pipeline
 // --------------------
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -101,19 +98,20 @@ app.UseAuthorization();
 // Test endpoints
 // --------------------
 app.MapGet("/public", () => "Anyone can access this!");
-
-app.MapGet("/protected",
-    [Authorize] () => "Welcome! You are authenticated.");
-
-app.MapGet("/farmer-only",
-    [Authorize(Policy = "Farmer")] () => "Hello Farmer! 🌾");
-
-app.MapGet("/driver-only",
-    [Authorize(Policy = "Driver")] () => "Hello Driver! 🚛");
-
-app.MapGet("/coordinator-only",
-    [Authorize(Policy = "Coordinator")] () => "Hello Coordinator! 👨‍💼");
+app.MapGet("/protected", [Authorize] () => "Welcome! You are authenticated.");
+app.MapGet("/farmer-only", [Authorize(Policy = "Farmer")] () => "Hello Farmer! 🌾");
+app.MapGet("/driver-only", [Authorize(Policy = "Driver")] () => "Hello Driver! 🚛");
+app.MapGet("/coordinator-only", [Authorize(Policy = "Coordinator")] () => "Hello Coordinator! 👨‍💼");
 
 // --------------------
+// Minimal API for fair cost calculation
+// --------------------
+app.MapPost("/calculate-fair-cost", async (CalculateFairCostSplitCommand command, IFairPricingAppService service) =>
+{
+    var result = await service.CalculateFairCostSplit(command);
+    return Results.Ok(result);
+});
+
 app.MapControllers();
+
 app.Run();
