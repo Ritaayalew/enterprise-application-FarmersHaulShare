@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PricingAndFairCostSplit.Domain\PricingAndFairCostSplit.Domain.csproj" />
     <ProjectReference Include="..\..\..\..\SharedKernel\SharedKernel.csproj" />
+    <ProjectReference Include="..\PricingAndFairCostSplit.Application\PricingAndFairCostSplit.Application.csproj" />
   </ItemGroup>
 
 </Project>
