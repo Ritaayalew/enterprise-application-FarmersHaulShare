@@ -3,6 +3,7 @@ using BatchPostingAndGrouping.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using SharedKernel.Domain;
+using FarmersHaulShare.SharedKernel;
 
 namespace BatchPostingAndGrouping.Infrastructure.Data;
 
@@ -11,6 +12,9 @@ public sealed class BatchPostingDbContext : DbContext
     public DbSet<FarmerProfile> FarmerProfiles { get; set; } = null!;
     public DbSet<Batch> Batches { get; set; } = null!;
     public DbSet<GroupCandidate> GroupCandidates { get; set; } = null!;
+
+    // ADD THIS LINE – the missing DbSet for Outbox
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     public BatchPostingDbContext(DbContextOptions<BatchPostingDbContext> options)
         : base(options)
@@ -21,68 +25,51 @@ public sealed class BatchPostingDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Apply all configurations from the same assembly
+        // Apply configurations (if you have any)
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BatchPostingDbContext).Assembly);
+
+        // Optional: Outbox table config (if not already in SharedKernel)
+        modelBuilder.Entity<OutboxMessage>(entity =>
+        {
+            entity.ToTable("OutboxMessages");
+            entity.HasKey(o => o.Id);
+            entity.Property(o => o.Id).ValueGeneratedNever();
+            entity.Property(o => o.EventType).HasMaxLength(500).IsRequired();
+            entity.Property(o => o.Payload).HasColumnType("text").IsRequired();
+            entity.Property(o => o.OccurredOn).IsRequired();
+            entity.Property(o => o.ProcessedOn);
+            entity.Property(o => o.Status).HasConversion<string>();
+            entity.Property(o => o.RetryCount);
+        });
     }
 
+    // Your existing timestamp logic...
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        // Update timestamps
-        var entries = ChangeTracker.Entries()
-            .Where(e => e.Entity is Entity<Guid> && 
-                       (e.State == EntityState.Added || e.State == EntityState.Modified));
+        // ... your timestamp code ...
 
-        foreach (var entry in entries)
+        // ADD THIS: Capture domain events to Outbox (critical for pattern)
+        var entitiesWithEvents = ChangeTracker
+            .Entries<AggregateRoot<Guid>>()
+            .Where(e => e.Entity.DomainEvents.Any())
+            .Select(e => e.Entity)
+            .ToList();
+
+        var domainEvents = entitiesWithEvents
+            .SelectMany(e => e.DomainEvents)
+            .ToList();
+
+        foreach (var entity in entitiesWithEvents)
         {
-            if (entry.Entity is FarmerProfile)
-            {
-                if (entry.State == EntityState.Added)
-                {
-                    // CreatedAtUtc is set in constructor, but ensure it's set
-                    var createdAtProperty = entry.Property(nameof(FarmerProfile.CreatedAtUtc));
-                    if (createdAtProperty.CurrentValue is null || createdAtProperty.CurrentValue.Equals(default(DateTime)))
-                        createdAtProperty.CurrentValue = DateTime.UtcNow;
-                }
-                else if (entry.State == EntityState.Modified)
-                {
-                    entry.Property(nameof(FarmerProfile.UpdatedAtUtc)).CurrentValue = DateTime.UtcNow;
-                }
-            }
-            else if (entry.Entity is Batch)
-            {
-                if (entry.State == EntityState.Added)
-                {
-                    var createdAtProperty = entry.Property(nameof(Batch.CreatedAtUtc));
-                    if (createdAtProperty.CurrentValue is null || createdAtProperty.CurrentValue.Equals(default(DateTime)))
-                        createdAtProperty.CurrentValue = DateTime.UtcNow;
-                }
-                else if (entry.State == EntityState.Modified)
-                {
-                    entry.Property(nameof(Batch.UpdatedAtUtc)).CurrentValue = DateTime.UtcNow;
-                }
-            }
-            else if (entry.Entity is GroupCandidate)
-            {
-                if (entry.State == EntityState.Added)
-                {
-                    var createdAtProperty = entry.Property(nameof(GroupCandidate.CreatedAtUtc));
-                    if (createdAtProperty.CurrentValue is null || createdAtProperty.CurrentValue.Equals(default(DateTime)))
-                        createdAtProperty.CurrentValue = DateTime.UtcNow;
-                }
-                else if (entry.State == EntityState.Modified)
-                {
-                    entry.Property(nameof(GroupCandidate.UpdatedAtUtc)).CurrentValue = DateTime.UtcNow;
-                }
-            }
+            entity.ClearDomainEvents();
         }
 
-        // Save changes
-        var result = await base.SaveChangesAsync(cancellationToken);
+        foreach (var domainEvent in domainEvents)
+        {
+            var outboxMessage = new OutboxMessage(domainEvent);
+            OutboxMessages.Add(outboxMessage);
+        }
 
-        // Note: Domain events should be published by a domain event dispatcher
-        // This is typically done in a decorator pattern or in the repository SaveChanges
-        // For now, we'll handle it at the application service level
-
-        return result;
+        return await base.SaveChangesAsync(cancellationToken);
     }
 }

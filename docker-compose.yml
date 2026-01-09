@@ -42,11 +42,11 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
     ports:
-      - "5433:5432"  # Use different port to avoid conflict with Keycloak's 5432
+      - "5433:5432"  #different port to avoid conflict with Keycloak's 5432
     volumes:
       - farmers_db_data:/var/lib/postgresql/data
 
-  # YOUR RabbitMQ (add this)
+  # RabbitMQ
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
