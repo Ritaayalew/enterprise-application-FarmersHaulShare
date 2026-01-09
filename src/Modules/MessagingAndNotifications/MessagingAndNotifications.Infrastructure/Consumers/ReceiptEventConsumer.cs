@@ -1,14 +1,14 @@
 using MassTransit;
 using MessagingAndNotifications.Application.EventHandlers;
+using PricingAndFairCostSplit.Domain.Events;
 using Microsoft.Extensions.Logging;
 
 namespace MessagingAndNotifications.Infrastructure.Consumers;
 
 /// <summary>
-/// MassTransit consumer for TransparencyReceiptGenerated event
-/// Note: This is a placeholder. When Pricing module is implemented, replace 'object' with the actual event type
+/// MassTransit consumer for FairCostSplitDetermined event from Pricing module
 /// </summary>
-public class ReceiptEventConsumer : IConsumer<object> // TODO: Replace with TransparencyReceiptGenerated when Pricing module is ready
+public class ReceiptEventConsumer : IConsumer<FairCostSplitDetermined>
 {
     private readonly IReceiptEventHandler _eventHandler;
     private readonly ILogger<ReceiptEventConsumer> _logger;
@@ -21,9 +21,10 @@ public class ReceiptEventConsumer : IConsumer<object> // TODO: Replace with Tran
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task Consume(ConsumeContext<object> context)
+    public async Task Consume(ConsumeContext<FairCostSplitDetermined> context)
     {
-        _logger.LogInformation("Received receipt event: {MessageId}", context.MessageId);
+        _logger.LogInformation("Received FairCostSplitDetermined event for HaulShare {HaulShareId}: {MessageId}", 
+            context.Message.HaulShareId, context.MessageId);
 
         try
         {

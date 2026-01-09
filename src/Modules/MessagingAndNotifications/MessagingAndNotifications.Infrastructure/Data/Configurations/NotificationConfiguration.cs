@@ -5,9 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace MessagingAndNotifications.Infrastructure.Data.Configurations;
 
-/// <summary>
-/// EF Core configuration for Notification entity
-/// </summary>
+
 public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 {
     public void Configure(EntityTypeBuilder<Notification> builder)
@@ -25,7 +23,7 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
             .HasMaxLength(50)
             .IsRequired();
 
-        // Configure NotificationChannel value object
+       
         builder.OwnsOne(n => n.Channel, channelBuilder =>
         {
             channelBuilder.Property(c => c.ChannelType)

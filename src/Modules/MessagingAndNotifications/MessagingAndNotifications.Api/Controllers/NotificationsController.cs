@@ -5,9 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MessagingAndNotifications.Api.Controllers;
 
-/// <summary>
-/// API controller for notification operations
-/// </summary>
+
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -24,9 +22,7 @@ public class NotificationsController : ControllerBase
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    /// <summary>
-    /// Send a notification
-    /// </summary>
+   
     [HttpPost]
     [ProducesResponseType(typeof(NotificationDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -46,9 +42,7 @@ public class NotificationsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Get a notification by ID
-    /// </summary>
+
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(NotificationDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -63,9 +57,7 @@ public class NotificationsController : ControllerBase
         return Ok(notification);
     }
 
-    /// <summary>
-    /// Get all notifications for a recipient
-    /// </summary>
+   
     [HttpGet("recipient/{recipientId}")]
     [ProducesResponseType(typeof(IEnumerable<NotificationDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<NotificationDto>>> GetNotificationsByRecipient(
@@ -76,9 +68,6 @@ public class NotificationsController : ControllerBase
         return Ok(notifications);
     }
 
-    /// <summary>
-    /// Get all notifications by type
-    /// </summary>
     [HttpGet("type/{notificationType}")]
     [ProducesResponseType(typeof(IEnumerable<NotificationDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<NotificationDto>>> GetNotificationsByType(
@@ -89,9 +78,7 @@ public class NotificationsController : ControllerBase
         return Ok(notifications);
     }
 
-    /// <summary>
-    /// Mark a notification as sent
-    /// </summary>
+  
     [HttpPost("{id}/mark-sent")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -111,9 +98,6 @@ public class NotificationsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Mark a notification as delivered
-    /// </summary>
     [HttpPost("{id}/mark-delivered")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -133,9 +117,7 @@ public class NotificationsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Mark a notification as failed
-    /// </summary>
+
     [HttpPost("{id}/mark-failed")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
