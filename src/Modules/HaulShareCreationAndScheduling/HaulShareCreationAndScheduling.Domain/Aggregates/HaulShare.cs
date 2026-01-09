@@ -2,6 +2,7 @@ using HaulShareCreationAndScheduling.Domain.Entities;
 using HaulShareCreationAndScheduling.Domain.Events;
 using HaulShareCreationAndScheduling.Domain.ValueObjects;
 using SharedKernel.Domain;
+using FarmersHaulShare.SharedKernel.Domain;
 
 namespace HaulShareCreationAndScheduling.Domain.Aggregates;
 
