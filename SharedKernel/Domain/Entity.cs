@@ -2,7 +2,7 @@ namespace SharedKernel.Domain;
 
 public abstract class Entity<TId>
 {
-    public required TId Id { get; init; }
+    public TId Id { get; protected set; } = default!;
 
     protected Entity() { }
 
