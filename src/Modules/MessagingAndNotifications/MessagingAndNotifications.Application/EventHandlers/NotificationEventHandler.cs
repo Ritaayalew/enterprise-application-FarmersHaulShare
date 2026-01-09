@@ -4,12 +4,20 @@ using MessagingAndNotifications.Domain.DomainEvents;
 using MessagingAndNotifications.Domain.Repositories;
 using SharedKernel.Domain;
 using FarmersHaulShare.SharedKernel.Domain;
+using PricingAndFairCostSplit.Domain.Events;
+using PricingAndFairCostSplit.Domain.ValueObjects;
+using TransportMarketplaceAndDispatch.Domain.Events;
+using TransportMarketplaceAndDispatch.Domain.Repositories;
+using TransportMarketplaceAndDispatch.Domain.Aggregates;
+using HaulShareCreationAndScheduling.Domain.Aggregates;
+using HaulShareCreationAndScheduling.Infrastructure.Persistence;
+using BatchPostingAndGrouping.Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace MessagingAndNotifications.Application.EventHandlers;
 
-/// <summary>
-/// Base implementation for notification event handlers
-/// </summary>
+
 public abstract class NotificationEventHandler
 {
     protected readonly INotificationService NotificationService;
@@ -23,9 +31,6 @@ public abstract class NotificationEventHandler
         NotificationRepository = notificationRepository ?? throw new ArgumentNullException(nameof(notificationRepository));
     }
 
-    /// <summary>
-    /// Helper method to send a notification and raise domain event
-    /// </summary>
     protected async Task<Guid> SendNotificationAndRaiseEventAsync(
         SendNotificationDto sendDto,
         Func<Guid, IDomainEvent> createDomainEvent,
@@ -33,163 +38,392 @@ public abstract class NotificationEventHandler
     {
         var notificationDto = await NotificationService.SendNotificationAsync(sendDto, cancellationToken);
 
-        // Raise domain event (will be published via outbox pattern)
+      
         var domainEvent = createDomainEvent(notificationDto.Id);
-        // Note: In a full implementation, this would be published via the event bus/outbox
-        // For now, we just create the event - actual publishing happens in Infrastructure layer
-
+        
         return notificationDto.Id;
     }
 }
 
-/// <summary>
-/// Implementation for quote event handler
-/// Note: This is a stub implementation. Full MassTransit consumer will be in Infrastructure layer
-/// </summary>
 public class QuoteEventHandler : NotificationEventHandler, IQuoteEventHandler
 {
+    private readonly HaulShareDbContext _haulShareDbContext;
+    private readonly IFarmerProfileRepository _farmerProfileRepository;
+    private readonly ILogger<QuoteEventHandler> _logger;
+
     public QuoteEventHandler(
         INotificationService notificationService,
-        INotificationRepository notificationRepository)
+        INotificationRepository notificationRepository,
+        HaulShareDbContext haulShareDbContext,
+        IFarmerProfileRepository farmerProfileRepository,
+        ILogger<QuoteEventHandler> logger)
         : base(notificationService, notificationRepository)
     {
+        _haulShareDbContext = haulShareDbContext ?? throw new ArgumentNullException(nameof(haulShareDbContext));
+        _farmerProfileRepository = farmerProfileRepository ?? throw new ArgumentNullException(nameof(farmerProfileRepository));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task HandleFixedPriceQuoteCalculatedAsync(object fixedPriceQuoteCalculatedEvent, CancellationToken cancellationToken = default)
+    public async Task HandleFixedPriceQuoteCalculatedAsync(PriceCalculated priceCalculatedEvent, CancellationToken cancellationToken = default)
     {
-        // TODO: When Pricing module is implemented, deserialize the actual event type
-        // For now, this is a placeholder that shows the structure
+        _logger.LogInformation("Handling PriceCalculated event for HaulShare {HaulShareId}", priceCalculatedEvent.HaulShareId);
 
-        // Example structure (to be replaced with actual event):
-        // var quoteEvent = fixedPriceQuoteCalculatedEvent as FixedPriceQuoteCalculated;
-        // if (quoteEvent == null) return;
+        // Get haul share to find farmers
+        var haulShare = await _haulShareDbContext.HaulShares
+            .Include(h => h.PickupStops)
+            .FirstOrDefaultAsync(h => h.Id == priceCalculatedEvent.HaulShareId, cancellationToken);
 
-        // var sendDto = new SendNotificationDto
-        // {
-        //     RecipientId = quoteEvent.RecipientId,
-        //     RecipientType = quoteEvent.RecipientType,
-        //     ChannelType = "SMS", // or get from user preferences
-        //     ChannelAddress = quoteEvent.RecipientPhoneNumber,
-        //     TemplateName = "Quote",
-        //     NotificationType = "Quote",
-        //     RelatedEntityId = quoteEvent.HaulShareId,
-        //     RelatedEntityType = "HaulShare",
-        //     Metadata = new Dictionary<string, string>
-        //     {
-        //         { "Amount", quoteEvent.QuoteAmount.ToString() },
-        //         { "Currency", quoteEvent.Currency },
-        //         { "HaulShareId", quoteEvent.HaulShareId.ToString() },
-        //         { "RecipientName", quoteEvent.RecipientName }
-        //     }
-        // };
+        if (haulShare == null)
+        {
+            _logger.LogWarning("HaulShare {HaulShareId} not found for PriceCalculated event", priceCalculatedEvent.HaulShareId);
+            return;
+        }
 
-        // await SendNotificationAndRaiseEventAsync(
-        //     sendDto,
-        //     notificationId => new QuoteSent(
-        //         notificationId,
-        //         quoteEvent.HaulShareId,
-        //         quoteEvent.RecipientId,
-        //         quoteEvent.RecipientType,
-        //         quoteEvent.QuoteAmount,
-        //         quoteEvent.Currency),
-        //     cancellationToken);
+        // Get unique farmer IDs from pickup stops
+        var farmerIds = haulShare.PickupStops.Select(s => s.FarmerId).Distinct().ToList();
 
-        await Task.CompletedTask; // Placeholder
+        // Send quote notifications to each farmer
+        foreach (var farmerId in farmerIds)
+        {
+            try
+            {
+                var farmer = await _farmerProfileRepository.GetByIdAsync(farmerId, cancellationToken);
+                if (farmer == null)
+                {
+                    _logger.LogWarning("Farmer {FarmerId} not found for quote notification", farmerId);
+                    continue;
+                }
+
+                var sendDto = new SendNotificationDto
+                {
+                    RecipientId = farmerId,
+                    RecipientType = "Farmer",
+                    ChannelType = "SMS", // Default to SMS, can be enhanced with user preferences
+                    ChannelAddress = farmer.PhoneNumber,
+                    TemplateName = "Quote",
+                    NotificationType = "Quote",
+                    RelatedEntityId = priceCalculatedEvent.HaulShareId,
+                    RelatedEntityType = "HaulShare",
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "Amount", priceCalculatedEvent.TotalRevenue.Amount.ToString("F2") },
+                        { "Currency", priceCalculatedEvent.TotalRevenue.Currency },
+                        { "PricePerKg", priceCalculatedEvent.PricePerKg.AmountPerKg.Amount.ToString("F2") },
+                        { "HaulShareId", priceCalculatedEvent.HaulShareId.ToString() },
+                        { "RecipientName", farmer.Name }
+                    }
+                };
+
+                await SendNotificationAndRaiseEventAsync(
+                    sendDto,
+                    notificationId => new QuoteSent(
+                        notificationId,
+                        priceCalculatedEvent.HaulShareId,
+                        farmerId,
+                        "Farmer",
+                        priceCalculatedEvent.TotalRevenue.Amount,
+                        priceCalculatedEvent.TotalRevenue.Currency),
+                    cancellationToken);
+
+                _logger.LogInformation("Sent quote notification to farmer {FarmerId}", farmerId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending quote notification to farmer {FarmerId}", farmerId);
+                // Continue with other farmers even if one fails
+            }
+        }
     }
 }
 
-/// <summary>
-/// Implementation for status update event handler
-/// Note: This is a stub implementation. Full MassTransit consumer will be in Infrastructure layer
-/// </summary>
+
 public class StatusUpdateEventHandler : NotificationEventHandler, IStatusUpdateEventHandler
 {
+    private readonly IDispatchJobRepository _dispatchJobRepository;
+    private readonly HaulShareDbContext _haulShareDbContext;
+    private readonly IFarmerProfileRepository _farmerProfileRepository;
+    private readonly ILogger<StatusUpdateEventHandler> _logger;
+
     public StatusUpdateEventHandler(
         INotificationService notificationService,
-        INotificationRepository notificationRepository)
+        INotificationRepository notificationRepository,
+        IDispatchJobRepository dispatchJobRepository,
+        HaulShareDbContext haulShareDbContext,
+        IFarmerProfileRepository farmerProfileRepository,
+        ILogger<StatusUpdateEventHandler> logger)
         : base(notificationService, notificationRepository)
     {
+        _dispatchJobRepository = dispatchJobRepository ?? throw new ArgumentNullException(nameof(dispatchJobRepository));
+        _haulShareDbContext = haulShareDbContext ?? throw new ArgumentNullException(nameof(haulShareDbContext));
+        _farmerProfileRepository = farmerProfileRepository ?? throw new ArgumentNullException(nameof(farmerProfileRepository));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task HandlePickupStartedAsync(object pickupStartedEvent, CancellationToken cancellationToken = default)
+    private async Task SendStatusUpdateNotificationsAsync(
+        Guid dispatchJobId,
+        string statusType,
+        string? location = null,
+        DateTime? estimatedTimeOfArrival = null,
+        CancellationToken cancellationToken = default)
     {
-        // TODO: Implement when Transport module is ready
-        await Task.CompletedTask;
+        _logger.LogInformation("Sending {StatusType} notifications for DispatchJob {DispatchJobId}", statusType, dispatchJobId);
+
+        // Get dispatch job to find haul share
+        var dispatchJob = await _dispatchJobRepository.GetByIdAsync(dispatchJobId, cancellationToken);
+        if (dispatchJob == null)
+        {
+            _logger.LogWarning("DispatchJob {DispatchJobId} not found for status update", dispatchJobId);
+            return;
+        }
+
+        // Get haul share to find farmers
+        var haulShare = await _haulShareDbContext.HaulShares
+            .Include(h => h.PickupStops)
+            .FirstOrDefaultAsync(h => h.Id == dispatchJob.HaulShareId, cancellationToken);
+
+        if (haulShare == null)
+        {
+            _logger.LogWarning("HaulShare {HaulShareId} not found for status update", dispatchJob.HaulShareId);
+            return;
+        }
+
+        // Get unique farmer IDs from pickup stops
+        var farmerIds = haulShare.PickupStops.Select(s => s.FarmerId).Distinct().ToList();
+
+        // Send notifications to farmers
+        foreach (var farmerId in farmerIds)
+        {
+            try
+            {
+                var farmer = await _farmerProfileRepository.GetByIdAsync(farmerId, cancellationToken);
+                if (farmer == null)
+                {
+                    _logger.LogWarning("Farmer {FarmerId} not found for status update notification", farmerId);
+                    continue;
+                }
+
+                var metadata = new Dictionary<string, string>
+                {
+                    { "HaulShareId", dispatchJob.HaulShareId.ToString() },
+                    { "RecipientName", farmer.Name }
+                };
+
+                if (!string.IsNullOrWhiteSpace(location))
+                    metadata["Location"] = location;
+
+                if (estimatedTimeOfArrival.HasValue)
+                    metadata["ETA"] = estimatedTimeOfArrival.Value.ToString("yyyy-MM-dd HH:mm");
+
+                var sendDto = new SendNotificationDto
+                {
+                    RecipientId = farmerId,
+                    RecipientType = "Farmer",
+                    ChannelType = "SMS",
+                    ChannelAddress = farmer.PhoneNumber,
+                    TemplateName = statusType,
+                    NotificationType = "StatusUpdate",
+                    RelatedEntityId = dispatchJob.HaulShareId,
+                    RelatedEntityType = "HaulShare",
+                    Metadata = metadata
+                };
+
+                await SendNotificationAndRaiseEventAsync(
+                    sendDto,
+                    notificationId => new StatusUpdateSent(
+                        notificationId,
+                        dispatchJob.HaulShareId,
+                        farmerId,
+                        "Farmer",
+                        statusType,
+                        location,
+                        estimatedTimeOfArrival),
+                    cancellationToken);
+
+                _logger.LogInformation("Sent {StatusType} notification to farmer {FarmerId}", statusType, farmerId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending {StatusType} notification to farmer {FarmerId}", statusType, farmerId);
+                // Continue with other farmers even if one fails
+            }
+        }
+
+        // Send notification to driver if assigned
+        if (dispatchJob.AssignedDriverId.HasValue)
+        {
+            try
+            {
+                var driverMetadata = new Dictionary<string, string>
+                {
+                    { "HaulShareId", dispatchJob.HaulShareId.ToString() },
+                    { "DispatchJobId", dispatchJobId.ToString() }
+                };
+
+                if (!string.IsNullOrWhiteSpace(location))
+                    driverMetadata["Location"] = location;
+
+                var driverSendDto = new SendNotificationDto
+                {
+                    RecipientId = dispatchJob.AssignedDriverId.Value,
+                    RecipientType = "Driver",
+                    ChannelType = "SMS",
+                    ChannelAddress = null, // Would need driver contact info from Driver repository
+                    TemplateName = statusType,
+                    NotificationType = "StatusUpdate",
+                    RelatedEntityId = dispatchJob.HaulShareId,
+                    RelatedEntityType = "HaulShare",
+                    Metadata = driverMetadata
+                };
+
+                await SendNotificationAndRaiseEventAsync(
+                    driverSendDto,
+                    notificationId => new StatusUpdateSent(
+                        notificationId,
+                        dispatchJob.HaulShareId,
+                        dispatchJob.AssignedDriverId.Value,
+                        "Driver",
+                        statusType,
+                        location,
+                        estimatedTimeOfArrival),
+                    cancellationToken);
+
+                _logger.LogInformation("Sent {StatusType} notification to driver {DriverId}", statusType, dispatchJob.AssignedDriverId.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending {StatusType} notification to driver {DriverId}", statusType, dispatchJob.AssignedDriverId.Value);
+            }
+        }
     }
 
-    public async Task HandlePickupCompletedAsync(object pickupCompletedEvent, CancellationToken cancellationToken = default)
+    public async Task HandlePickupStartedAsync(PickupStarted pickupStartedEvent, CancellationToken cancellationToken = default)
     {
-        // TODO: Implement when Transport module is ready
-        await Task.CompletedTask;
+        var dispatchJob = await _dispatchJobRepository.GetByIdAsync(pickupStartedEvent.DispatchJobId, cancellationToken);
+        var location = dispatchJob?.CurrentLocation != null
+            ? $"{dispatchJob.CurrentLocation.Latitude}, {dispatchJob.CurrentLocation.Longitude}"
+            : null;
+
+        await SendStatusUpdateNotificationsAsync(
+            pickupStartedEvent.DispatchJobId,
+            "PickupStarted",
+            location,
+            dispatchJob?.EstimatedDeliveryTime,
+            cancellationToken);
     }
 
-    public async Task HandleDeliveryStartedAsync(object deliveryStartedEvent, CancellationToken cancellationToken = default)
+    public async Task HandlePickupCompletedAsync(PickupCompleted pickupCompletedEvent, CancellationToken cancellationToken = default)
     {
-        // TODO: Implement when Transport module is ready
-        await Task.CompletedTask;
+        await SendStatusUpdateNotificationsAsync(
+            pickupCompletedEvent.DispatchJobId,
+            "PickupCompleted",
+            null,
+            null,
+            cancellationToken);
     }
 
-    public async Task HandleDeliveryCompletedAsync(object deliveryCompletedEvent, CancellationToken cancellationToken = default)
+    public async Task HandleDeliveryStartedAsync(DeliveryStarted deliveryStartedEvent, CancellationToken cancellationToken = default)
     {
-        // TODO: Implement when Transport module is ready
-        await Task.CompletedTask;
+        var dispatchJob = await _dispatchJobRepository.GetByIdAsync(deliveryStartedEvent.DispatchJobId, cancellationToken);
+        var location = dispatchJob?.CurrentLocation != null
+            ? $"{dispatchJob.CurrentLocation.Latitude}, {dispatchJob.CurrentLocation.Longitude}"
+            : null;
+
+        await SendStatusUpdateNotificationsAsync(
+            deliveryStartedEvent.DispatchJobId,
+            "DeliveryStarted",
+            location,
+            dispatchJob?.EstimatedDeliveryTime,
+            cancellationToken);
+    }
+
+    public async Task HandleDeliveryCompletedAsync(DeliveryCompleted deliveryCompletedEvent, CancellationToken cancellationToken = default)
+    {
+        await SendStatusUpdateNotificationsAsync(
+            deliveryCompletedEvent.DispatchJobId,
+            "DeliveryCompleted",
+            null,
+            null,
+            cancellationToken);
     }
 }
 
 /// <summary>
 /// Implementation for receipt event handler
-/// Note: This is a stub implementation. Full MassTransit consumer will be in Infrastructure layer
 /// </summary>
 public class ReceiptEventHandler : NotificationEventHandler, IReceiptEventHandler
 {
+    private readonly IFarmerProfileRepository _farmerProfileRepository;
+    private readonly ILogger<ReceiptEventHandler> _logger;
+
     public ReceiptEventHandler(
         INotificationService notificationService,
-        INotificationRepository notificationRepository)
+        INotificationRepository notificationRepository,
+        IFarmerProfileRepository farmerProfileRepository,
+        ILogger<ReceiptEventHandler> logger)
         : base(notificationService, notificationRepository)
     {
+        _farmerProfileRepository = farmerProfileRepository ?? throw new ArgumentNullException(nameof(farmerProfileRepository));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task HandleTransparencyReceiptGeneratedAsync(object transparencyReceiptGeneratedEvent, CancellationToken cancellationToken = default)
+    public async Task HandleTransparencyReceiptGeneratedAsync(FairCostSplitDetermined fairCostSplitEvent, CancellationToken cancellationToken = default)
     {
-        // TODO: When Pricing module is implemented, deserialize the actual event type
-        // For now, this is a placeholder that shows the structure
+        _logger.LogInformation("Handling FairCostSplitDetermined event for HaulShare {HaulShareId} with {FarmerCount} farmers",
+            fairCostSplitEvent.HaulShareId, fairCostSplitEvent.FarmerShares.Count);
 
-        // Example structure (to be replaced with actual event):
-        // var receiptEvent = transparencyReceiptGeneratedEvent as TransparencyReceiptGenerated;
-        // if (receiptEvent == null) return;
+        // Send receipt notification to each farmer in the cost split
+        foreach (var farmerShare in fairCostSplitEvent.FarmerShares)
+        {
+            try
+            {
+                var farmer = await _farmerProfileRepository.GetByIdAsync(farmerShare.FarmerId, cancellationToken);
+                if (farmer == null)
+                {
+                    _logger.LogWarning("Farmer {FarmerId} not found for receipt notification", farmerShare.FarmerId);
+                    continue;
+                }
 
-        // var sendDto = new SendNotificationDto
-        // {
-        //     RecipientId = receiptEvent.RecipientId,
-        //     RecipientType = receiptEvent.RecipientType,
-        //     ChannelType = "SMS", // or get from user preferences
-        //     ChannelAddress = receiptEvent.RecipientPhoneNumber,
-        //     TemplateName = "Receipt",
-        //     NotificationType = "Receipt",
-        //     RelatedEntityId = receiptEvent.HaulShareId,
-        //     RelatedEntityType = "HaulShare",
-        //     Metadata = new Dictionary<string, string>
-        //     {
-        //         { "TotalAmount", receiptEvent.TotalAmount.ToString() },
-        //         { "RecipientShare", receiptEvent.RecipientShare.ToString() },
-        //         { "Currency", receiptEvent.Currency },
-        //         { "HaulShareId", receiptEvent.HaulShareId.ToString() },
-        //         { "RecipientName", receiptEvent.RecipientName }
-        //     }
-        // };
+                var sendDto = new SendNotificationDto
+                {
+                    RecipientId = farmerShare.FarmerId,
+                    RecipientType = "Farmer",
+                    ChannelType = "SMS",
+                    ChannelAddress = farmer.PhoneNumber,
+                    TemplateName = "Receipt",
+                    NotificationType = "Receipt",
+                    RelatedEntityId = fairCostSplitEvent.HaulShareId,
+                    RelatedEntityType = "HaulShare",
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "TotalAmount", fairCostSplitEvent.TotalCost.Amount.ToString("F2") },
+                        { "RecipientShare", farmerShare.ShareAmount.Amount.ToString("F2") },
+                        { "Percentage", farmerShare.Percentage.ToString("F2") },
+                        { "Currency", fairCostSplitEvent.TotalCost.Currency },
+                        { "HaulShareId", fairCostSplitEvent.HaulShareId.ToString() },
+                        { "RecipientName", farmer.Name }
+                    }
+                };
 
-        // await SendNotificationAndRaiseEventAsync(
-        //     sendDto,
-        //     notificationId => new ReceiptSent(
-        //         notificationId,
-        //         receiptEvent.HaulShareId,
-        //         receiptEvent.RecipientId,
-        //         receiptEvent.RecipientType,
-        //         receiptEvent.TotalAmount,
-        //         receiptEvent.RecipientShare,
-        //         receiptEvent.Currency),
-        //     cancellationToken);
+                await SendNotificationAndRaiseEventAsync(
+                    sendDto,
+                    notificationId => new ReceiptSent(
+                        notificationId,
+                        fairCostSplitEvent.HaulShareId,
+                        farmerShare.FarmerId,
+                        "Farmer",
+                        fairCostSplitEvent.TotalCost.Amount,
+                        farmerShare.ShareAmount.Amount,
+                        fairCostSplitEvent.TotalCost.Currency),
+                    cancellationToken);
 
-        await Task.CompletedTask; // Placeholder
+                _logger.LogInformation("Sent receipt notification to farmer {FarmerId} for share {ShareAmount}",
+                    farmerShare.FarmerId, farmerShare.ShareAmount);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending receipt notification to farmer {FarmerId}", farmerShare.FarmerId);
+                // Continue with other farmers even if one fails
+            }
+        }
     }
 }

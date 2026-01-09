@@ -4,6 +4,13 @@ using MessagingAndNotifications.Domain.Repositories;
 using MessagingAndNotifications.Infrastructure.Consumers;
 using MessagingAndNotifications.Infrastructure.Data;
 using MessagingAndNotifications.Infrastructure.Repositories;
+using TransportMarketplaceAndDispatch.Domain.Repositories;
+using TransportMarketplaceAndDispatch.Infrastructure.Repositories;
+using TransportMarketplaceAndDispatch.Infrastructure.Persistence;
+using HaulShareCreationAndScheduling.Infrastructure.Persistence;
+using BatchPostingAndGrouping.Domain.Repositories;
+using BatchPostingAndGrouping.Infrastructure.Repositories;
+using BatchPostingAndGrouping.Infrastructure.Data;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,7 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IClaimsTransformation, SharedKernel.ClaimsTransformer>();
 
-// JWT Authentication
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -50,30 +57,47 @@ builder.Services.AddEndpointsApiExplorer();
 // Swagger
 builder.Services.AddSwaggerGen();
 
-// Database
-var connectionString = builder.Configuration.GetConnectionString("MessagingDb")
+// Database - Messaging Module
+var messagingConnectionString = builder.Configuration.GetConnectionString("MessagingDb")
     ?? "Server=localhost;Database=FarmersHaulShare_Messaging;Trusted_Connection=true;TrustServerCertificate=true;";
 
 builder.Services.AddDbContext<MessagingDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(messagingConnectionString));
 
-// Repositories
+
+builder.Services.AddDbContext<HaulShareDbContext>(options =>
+    options.UseInMemoryDatabase("HaulShareDb"));
+
+builder.Services.AddDbContext<TransportDbContext>(options =>
+    options.UseInMemoryDatabase("TransportDb"));
+
+
+var batchPostingConnectionString = builder.Configuration.GetConnectionString("BatchPostingDb")
+    ?? "Server=localhost;Database=FarmersHaulShare_BatchPosting;Trusted_Connection=true;TrustServerCertificate=true;";
+
+builder.Services.AddDbContext<BatchPostingDbContext>(options =>
+    options.UseSqlServer(batchPostingConnectionString));
+
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
-// Application Services
+
+builder.Services.AddScoped<IDispatchJobRepository, DispatchJobRepository>();
+builder.Services.AddScoped<IFarmerProfileRepository, FarmerProfileRepository>();
+
+
 builder.Services.AddScoped<ITemplateService, InMemoryTemplateService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
-// Event Handlers
+
 builder.Services.AddScoped<IQuoteEventHandler, QuoteEventHandler>();
 builder.Services.AddScoped<IStatusUpdateEventHandler, StatusUpdateEventHandler>();
 builder.Services.AddScoped<IReceiptEventHandler, ReceiptEventHandler>();
 
-// MassTransit (RabbitMQ)
+
 var massTransitConfig = builder.Configuration.GetSection("MassTransit:RabbitMq");
 builder.Services.AddMassTransit(x =>
 {
-    // Add consumers
+
     x.AddConsumer<QuoteEventConsumer>();
     x.AddConsumer<PickupStartedConsumer>();
     x.AddConsumer<PickupCompletedConsumer>();
@@ -91,25 +115,21 @@ builder.Services.AddMassTransit(x =>
                 h.Password(massTransitConfig["Password"] ?? "guest");
             });
 
-        // Configure consumers
+      
         cfg.ConfigureEndpoints(context);
 
-        // Note: When other modules are implemented, configure specific queues:
-        // cfg.ReceiveEndpoint("quote-events", e => { e.ConfigureConsumer<QuoteEventConsumer>(context); });
-        // cfg.ReceiveEndpoint("status-events", e => { e.ConfigureConsumer<PickupStartedConsumer>(context); });
-        // etc.
+     
     });
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 
-    // Ensure database is created (in development only)
+    
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<MessagingDbContext>();
     await dbContext.Database.EnsureCreatedAsync();
@@ -120,7 +140,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Test endpoints
+
 app.MapGet("/public", () => "Anyone can access this!");
 app.MapGet("/protected", [Authorize] () => $"Welcome! You are authenticated.");
 app.MapGet("/farmer-only", [Authorize(Policy = "Farmer")] () => "Hello Farmer! 🌾");

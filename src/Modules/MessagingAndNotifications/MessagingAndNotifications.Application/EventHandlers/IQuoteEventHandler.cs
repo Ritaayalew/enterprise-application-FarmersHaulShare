@@ -1,3 +1,5 @@
+using PricingAndFairCostSplit.Domain.Events;
+
 namespace MessagingAndNotifications.Application.EventHandlers;
 
 /// <summary>
@@ -6,8 +8,7 @@ namespace MessagingAndNotifications.Application.EventHandlers;
 public interface IQuoteEventHandler
 {
     /// <summary>
-    /// Handles FixedPriceQuoteCalculated event and sends quote notifications
-    /// This will be implemented as a MassTransit consumer when Pricing module is ready
+    /// Handles PriceCalculated event and sends quote notifications
     /// </summary>
-    Task HandleFixedPriceQuoteCalculatedAsync(object fixedPriceQuoteCalculatedEvent, CancellationToken cancellationToken = default);
+    Task HandleFixedPriceQuoteCalculatedAsync(PriceCalculated priceCalculatedEvent, CancellationToken cancellationToken = default);
 }

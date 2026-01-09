@@ -1,14 +1,14 @@
 using MassTransit;
 using MessagingAndNotifications.Application.EventHandlers;
+using PricingAndFairCostSplit.Domain.Events;
 using Microsoft.Extensions.Logging;
 
 namespace MessagingAndNotifications.Infrastructure.Consumers;
 
 /// <summary>
-/// MassTransit consumer for FixedPriceQuoteCalculated event
-/// Note: This is a placeholder. When Pricing module is implemented, replace 'object' with the actual event type
+/// MassTransit consumer for PriceCalculated event from Pricing module
 /// </summary>
-public class QuoteEventConsumer : IConsumer<object> 
+public class QuoteEventConsumer : IConsumer<PriceCalculated>
 {
     private readonly IQuoteEventHandler _eventHandler;
     private readonly ILogger<QuoteEventConsumer> _logger;
@@ -21,9 +21,10 @@ public class QuoteEventConsumer : IConsumer<object>
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task Consume(ConsumeContext<object> context)
+    public async Task Consume(ConsumeContext<PriceCalculated> context)
     {
-        _logger.LogInformation("Received quote event: {MessageId}", context.MessageId);
+        _logger.LogInformation("Received PriceCalculated event for HaulShare {HaulShareId}: {MessageId}", 
+            context.Message.HaulShareId, context.MessageId);
 
         try
         {
