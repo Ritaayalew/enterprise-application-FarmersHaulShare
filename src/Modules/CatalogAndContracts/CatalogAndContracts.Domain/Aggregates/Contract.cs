@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using CatalogAndContracts.Domain.Entities;
 using CatalogAndContracts.Domain.ValueObjects;
 using CatalogAndContracts.Domain.Events;
 
@@ -10,7 +9,6 @@ namespace CatalogAndContracts.Domain.Aggregates
     {
         public Guid Id { get; private set; }
         public Guid ProductId { get; private set; }
-        public Product? Product { get; private set; }
 
         public decimal Price { get; private set; }
         public string BuyerId { get; private set; } = string.Empty;
@@ -20,19 +18,17 @@ namespace CatalogAndContracts.Domain.Aggregates
         private readonly List<object> _events = new();
         public IReadOnlyCollection<object> Events => _events.AsReadOnly();
 
-        // EF Core requires a parameterless constructor
-        private Contract() { }
+        private Contract() { } // EF
 
-        public Contract(Product product, decimal price, string buyerId, string farmerId)
+        public Contract(Guid productId, decimal price, string buyerId, string farmerId)
         {
             Id = Guid.NewGuid();
-            Product = product ?? throw new ArgumentNullException(nameof(product));
-            ProductId = product.Id;
+            ProductId = productId;
             Price = price;
-            BuyerId = buyerId ?? throw new ArgumentNullException(nameof(buyerId));
-            FarmerId = farmerId ?? throw new ArgumentNullException(nameof(farmerId));
+            BuyerId = buyerId;
+            FarmerId = farmerId;
 
-            AddEvent(new ContractCreated(Id, Product.Name, BuyerId, FarmerId));
+            AddEvent(new ContractCreated(Id, ProductId, BuyerId, FarmerId));
         }
 
         public void SetAgreementTerms(AgreementTerms terms)
@@ -42,7 +38,9 @@ namespace CatalogAndContracts.Domain.Aggregates
 
         public void UpdatePrice(decimal newPrice)
         {
-            if (newPrice <= 0) throw new ArgumentOutOfRangeException(nameof(newPrice), "Price must be positive.");
+            if (newPrice <= 0)
+                throw new ArgumentOutOfRangeException(nameof(newPrice));
+
             Price = newPrice;
         }
 
