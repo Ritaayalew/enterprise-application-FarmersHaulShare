@@ -1,4 +1,4 @@
-using BatchPostingAndGrouping.Infrastructure;
+using BatchPostingAndGrouping.Infrastructure.Data;
 using FarmersHaulShare.SharedKernel;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +10,11 @@ namespace FarmersHaulShare.Api;
 
 public class OutboxPublisherJob : IJob
 {
-    private readonly BatchPostingAndGroupingDbContext _dbContext;
+    private readonly BatchPostingDbContext _dbContext;
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly ILogger<OutboxPublisherJob> _logger;
 
-    public OutboxPublisherJob(BatchPostingAndGroupingDbContext dbContext, IPublishEndpoint publishEndpoint, ILogger<OutboxPublisherJob> logger)
+    public OutboxPublisherJob(BatchPostingDbContext dbContext, IPublishEndpoint publishEndpoint, ILogger<OutboxPublisherJob> logger)
     {
         _dbContext = dbContext;
         _publishEndpoint = publishEndpoint;
@@ -24,7 +24,7 @@ public class OutboxPublisherJob : IJob
     public async Task Execute(IJobExecutionContext context)
     {
         var pending = await _dbContext.OutboxMessages
-            .Where(o => o.Status == OutboxMessage.OutboxMessageStatus.Pending || 
+            .Where(o => o.Status == OutboxMessage.OutboxMessageStatus.Pending ||
                         (o.Status == OutboxMessage.OutboxMessageStatus.Failed && o.RetryCount < 5))
             .OrderBy(o => o.OccurredOn)
             .Take(20)

@@ -17,7 +17,7 @@ public static class InfrastructureServiceRegistration
         services.AddDbContext<IdentityDbContext>(options =>
         {
             var connectionString = configuration.GetConnectionString("IdentityConnection");
-            options.UseNpgsql(connectionString);
+            options.UseNpgsql(connectionString, b => b.MigrationsHistoryTable("__EFMigrationsHistory", "iam"));
         });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();

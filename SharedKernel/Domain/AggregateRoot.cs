@@ -19,7 +19,7 @@ public abstract class AggregateRoot<TId> : Entity<TId>
         _domainEvents.Add(domainEvent);
     }
 
-    internal void ClearDomainEvents()
+    public void ClearDomainEvents()
     {
         _domainEvents.Clear();
     }

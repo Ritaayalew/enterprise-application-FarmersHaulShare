@@ -12,8 +12,9 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<IdentityDb
         // Use your real connection string (update username/password)
         // For schema isolation: add SearchPath=iam
         optionsBuilder.UseNpgsql(
-            "Host=localhost;Port=5432;Database=farmershaulshare;Username=postgres;Password=yourpassword;SearchPath=iam"
+            "Host=localhost;Port=5432;Database=farmershaulshare;Username=admin;Password=password;SearchPath=iam"
         );
+
 
         // Optional: Show detailed errors during migrations
         // optionsBuilder.EnableSensitiveDataLogging();
