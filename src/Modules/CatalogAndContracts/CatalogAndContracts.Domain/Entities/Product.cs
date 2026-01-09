@@ -12,5 +12,20 @@ namespace CatalogAndContracts.Domain.Entities
             Name = name;
             BasePrice = basePrice;
         }
+        public void Rename(string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName))
+                throw new ArgumentException("Product name cannot be empty.", nameof(newName));
+
+            Name = newName;
+        }
+
+        public void UpdateBasePrice(decimal newPrice)
+        {
+            if (newPrice <= 0)
+                throw new ArgumentOutOfRangeException(nameof(newPrice), "Base price must be greater than zero.");
+
+            BasePrice = newPrice;
+        }
     }
 }
