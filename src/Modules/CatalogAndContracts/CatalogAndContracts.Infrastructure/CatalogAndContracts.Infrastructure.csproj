@@ -2,6 +2,10 @@
 
 <ItemGroup>
   <ProjectReference Include="..\CatalogAndContracts.Domain\CatalogAndContracts.Domain.csproj" />
+  <ProjectReference Include="..\..\BatchPostingAndGrouping\BatchPostingAndGrouping.Domain\BatchPostingAndGrouping.Domain.csproj" />
+  <ProjectReference Include="..\..\BatchPostingAndGrouping\BatchPostingAndGrouping.Application\BatchPostingAndGrouping.Application.csproj" />
+  <ProjectReference Include="..\..\PricingAndFairCostSplit\PricingAndFairCostSplit.Domain\PricingAndFairCostSplit.Domain.csproj" />
+  <ProjectReference Include="..\..\PricingAndFairCostSplit\PricingAndFairCostSplit.Application\PricingAndFairCostSplit.Application.csproj" />
 </ItemGroup>
 
 <ItemGroup>

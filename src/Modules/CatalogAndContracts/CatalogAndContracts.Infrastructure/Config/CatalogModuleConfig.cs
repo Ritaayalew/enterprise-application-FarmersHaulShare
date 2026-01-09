@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CatalogAndContracts.Infrastructure.Persistence;
 using CatalogAndContracts.Infrastructure.Repositories;
-using CatalogAndContracts.Infrastructure.AIIntegration;
+using CatalogAndContracts.Infrastructure.AIIntegration.Services;
 
 namespace CatalogAndContracts.Infrastructure.Config
 {
@@ -15,8 +15,10 @@ namespace CatalogAndContracts.Infrastructure.Config
             services.AddDbContext<CatalogDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            services.AddScoped<ContractRepository>();
-            services.AddScoped<ContractAIService>();
+            services.AddScoped<BatchAnalysisService>();
+            services.AddScoped<FairCostSplitService>();
+            services.AddScoped<DemandRoutingService>();
+
 
             return services;
         }

@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
-
+using CatalogAndContracts.Infrastructure.AIIntegration.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IClaimsTransformation, SharedKernel.ClaimsTransformer>();
-
+builder.Services.AddScoped<BatchAnalysisService>();
+builder.Services.AddScoped<FairCostSplitService>();
+builder.Services.AddScoped<DemandRoutingService>();
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
