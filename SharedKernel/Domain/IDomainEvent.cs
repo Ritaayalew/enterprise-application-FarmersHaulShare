@@ -1,6 +1,7 @@
-namespace SharedKernel.Domain;
-
-public interface IDomainEvent
+namespace FarmersHaulShare.SharedKernel.Domain
 {
-    DateTime OccurredOn { get; }
+    public interface IDomainEvent
+    {
+        DateTime OccurredOn { get; }
+    }
 }

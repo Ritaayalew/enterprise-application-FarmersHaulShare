@@ -6,4 +6,18 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.0" />
+    <PackageReference Include="MassTransit" Version="8.5.0" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TransportMarketplaceAndDispatch.Domain\TransportMarketplaceAndDispatch.Domain.csproj" />
+    <ProjectReference Include="..\TransportMarketplaceAndDispatch.Application\TransportMarketplaceAndDispatch.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\SharedKernel\SharedKernel.csproj" />
+    <ProjectReference Include="..\..\HaulShareCreationAndScheduling\HaulShareCreationAndScheduling.Domain\HaulShareCreationAndScheduling.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

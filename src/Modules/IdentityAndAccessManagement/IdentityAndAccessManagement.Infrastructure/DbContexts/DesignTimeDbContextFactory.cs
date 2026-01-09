@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using IdentityAndAccessManagement.Infrastructure.DbContexts;
 
 namespace IdentityAndAccessManagement.Infrastructure.DbContexts;
 

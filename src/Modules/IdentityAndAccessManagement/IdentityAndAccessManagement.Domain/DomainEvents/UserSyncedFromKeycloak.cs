@@ -1,4 +1,4 @@
-using SharedKernel.Domain;
+using FarmersHaulShare.SharedKernel.Domain;
 
 namespace IdentityAndAccessManagement.Domain.DomainEvents;
 
