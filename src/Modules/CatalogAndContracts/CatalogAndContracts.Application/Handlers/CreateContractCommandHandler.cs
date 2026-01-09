@@ -1,7 +1,6 @@
 using CatalogAndContracts.Application.Commands;
 using CatalogAndContracts.Application.DTOs;
 using CatalogAndContracts.Domain.Aggregates;
-using CatalogAndContracts.Domain.Entities;
 using CatalogAndContracts.Domain.Repositories;
 
 namespace CatalogAndContracts.Application.Handlers
@@ -17,10 +16,8 @@ namespace CatalogAndContracts.Application.Handlers
 
         public async Task<ContractDto> Handle(CreateContractCommand command)
         {
-            var product = new Product(command.ProductName, command.BasePrice);
-
             var contract = new Contract(
-                product,
+                command.ProductId,
                 command.Price,
                 command.BuyerId,
                 command.FarmerId
@@ -31,7 +28,7 @@ namespace CatalogAndContracts.Application.Handlers
             return new ContractDto
             {
                 Id = contract.Id,
-                ProductName = contract.Product?.Name ?? string.Empty,
+                ProductId = contract.ProductId,
                 Price = contract.Price,
                 BuyerId = contract.BuyerId,
                 FarmerId = contract.FarmerId

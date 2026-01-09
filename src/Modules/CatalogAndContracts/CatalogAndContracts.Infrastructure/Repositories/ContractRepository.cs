@@ -18,8 +18,8 @@ namespace CatalogAndContracts.Infrastructure.Repositories
 
         public async Task<Contract?> GetByIdAsync(Guid id)
         {
+            // Return the aggregate only (DDD clean)
             return await _db.Contracts
-                .Include(c => c.Product)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 

@@ -14,11 +14,14 @@ namespace CatalogAndContracts.Infrastructure.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Contract mapping
+
             modelBuilder.Entity<Contract>(builder =>
             {
                 builder.ToTable("Contracts");
                 builder.HasKey(c => c.Id);
+
+                builder.Property(c => c.ProductId)
+                       .IsRequired();
 
                 builder.Property(c => c.Price)
                        .IsRequired()
@@ -31,11 +34,6 @@ namespace CatalogAndContracts.Infrastructure.Persistence
                 builder.Property(c => c.FarmerId)
                        .IsRequired()
                        .HasMaxLength(100);
-
-                builder.HasOne(c => c.Product)
-                       .WithMany()
-                       .HasForeignKey(c => c.ProductId)
-                       .OnDelete(DeleteBehavior.Restrict);
 
                 builder.OwnsOne(c => c.Terms, terms =>
                 {
@@ -50,7 +48,6 @@ namespace CatalogAndContracts.Infrastructure.Persistence
                 });
             });
 
-            // Product mapping
             modelBuilder.Entity<Product>(builder =>
             {
                 builder.ToTable("Products");
