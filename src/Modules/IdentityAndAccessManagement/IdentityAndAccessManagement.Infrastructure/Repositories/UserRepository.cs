@@ -1,33 +1,46 @@
+using IdentityAndAccessManagement.Application.Abstractions;
 using IdentityAndAccessManagement.Domain.Entities;
+using IdentityAndAccessManagement.Infrastructure.DbContexts;
 using Microsoft.EntityFrameworkCore;
 
-namespace IdentityAndAccessManagement.Infrastructure.DbContexts;
+namespace IdentityAndAccessManagement.Infrastructure.Repositories;
 
-public class IdentityDbContext : DbContext
+public class UserRepository : IUserRepository
 {
-    public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
-        : base(options) { }
+    private readonly IdentityDbContext _db;
 
-    public DbSet<User> Users => Set<User>();
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public UserRepository(IdentityDbContext db)
     {
-        base.OnModelCreating(modelBuilder);
-
-        // Configure User entity
-        modelBuilder.Entity<User>(b =>
-        {
-            b.HasKey(u => u.Id);
-
-            b.OwnsOne(u => u.Email, e => e.Property(x => x.Value).HasColumnName("Email").IsRequired());
-            b.OwnsOne(u => u.Name, n => n.Property(x => x.Value).HasColumnName("FullName").IsRequired());
-            b.OwnsOne(u => u.PhoneNumber, p => p.Property(x => x.Value).HasColumnName("PhoneNumber"));
-            b.OwnsOne(u => u.CooperativeId, c => c.Property(x => x.Value).HasColumnName("CooperativeId"));
-
-            b.Ignore(u => u.Roles); // Roles can be stored in a join table if needed later
-            b.Property(u => u.HasCompletedOnboarding);
-            b.Property(u => u.LastLoginAt);
-            b.Property(u => u.KeycloakSubjectId).IsRequired();
-        });
+        _db = db;
     }
+
+    public async Task<User?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        return await _db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
+    }
+
+    public async Task<User?> GetByKeycloakSubjectIdAsync(string subjectId, CancellationToken ct = default)
+    {
+        return await _db.Users.FirstOrDefaultAsync(u => u.KeycloakSubjectId == subjectId, ct);
+    }
+
+    public async Task<User?> GetByEmailAsync(string email, CancellationToken ct = default)
+    {
+        var normalized = email.Trim().ToLowerInvariant();
+
+        return await _db.Users
+            .FirstOrDefaultAsync(u => u.Email.Value == normalized, ct);
+    }
+
+    public async Task AddAsync(User user, CancellationToken ct = default)
+    {
+        await _db.Users.AddAsync(user, ct);
+    }
+
+    public Task UpdateAsync(User user, CancellationToken ct = default)
+    {
+        _db.Users.Update(user);
+        return Task.CompletedTask;
+    }
+
 }

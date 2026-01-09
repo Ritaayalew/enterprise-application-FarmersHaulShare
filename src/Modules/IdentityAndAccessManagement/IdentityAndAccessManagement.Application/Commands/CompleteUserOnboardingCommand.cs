@@ -1,5 +1,4 @@
 using MediatR;
-using IdentityAndAccessManagement.Domain.Repositories;
 using IdentityAndAccessManagement.Application.Abstractions;
 
 namespace IdentityAndAccessManagement.Application.Commands;

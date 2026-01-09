@@ -1,6 +1,6 @@
 using MediatR;
 using IdentityAndAccessManagement.Application.DTOs;
-using IdentityAndAccessManagement.Domain.Repositories;
+using IdentityAndAccessManagement.Application.Abstractions;
 using IdentityAndAccessManagement.Application.Mapping;
 
 namespace IdentityAndAccessManagement.Application.Queries;

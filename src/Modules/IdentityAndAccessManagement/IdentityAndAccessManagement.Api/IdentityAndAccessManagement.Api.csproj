@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\SharedKernel\SharedKernel.csproj" />
     <ProjectReference Include="..\IdentityAndAccessManagement.Application\IdentityAndAccessManagement.Application.csproj" />
+    <ProjectReference Include="..\IdentityAndAccessManagement.Infrastructure\IdentityAndAccessManagement.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

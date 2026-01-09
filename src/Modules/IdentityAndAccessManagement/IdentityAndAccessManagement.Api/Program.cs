@@ -57,6 +57,7 @@ using IdentityAndAccessManagement.Api.Auth;
 using IdentityAndAccessManagement.Api.Endpoints;
 using IdentityAndAccessManagement.Api.Dependencies;
 using Microsoft.AspNetCore.Authorization;
+using IdentityAndAccessManagement.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,7 +67,8 @@ builder.Services.AddKeycloakJwt(builder.Configuration);
 // Application + MediatR + Domain
 builder.Services.AddApplicationLayer();
 
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();

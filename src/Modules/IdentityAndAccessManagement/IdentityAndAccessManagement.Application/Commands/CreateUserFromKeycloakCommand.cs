@@ -1,6 +1,5 @@
 using MediatR;
 using IdentityAndAccessManagement.Domain.Entities;
-using IdentityAndAccessManagement.Domain.Repositories;
 using IdentityAndAccessManagement.Domain.Roles;
 using IdentityAndAccessManagement.Domain.ValueObjects;
 using IdentityAndAccessManagement.Application.Abstractions;

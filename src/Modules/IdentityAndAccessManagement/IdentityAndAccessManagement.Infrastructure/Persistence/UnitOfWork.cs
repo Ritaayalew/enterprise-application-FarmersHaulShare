@@ -2,7 +2,7 @@ using IdentityAndAccessManagement.Application.Abstractions;
 using IdentityAndAccessManagement.Infrastructure.DbContexts;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace IdentityAndAccessManagement.Infrastructure.UnitOfWork;
+namespace IdentityAndAccessManagement.Infrastructure.Persistence;
 
 public class UnitOfWork : IUnitOfWork
 {
