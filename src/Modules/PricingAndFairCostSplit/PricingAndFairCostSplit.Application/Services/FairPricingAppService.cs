@@ -4,7 +4,6 @@ using PricingAndFairCostSplit.Domain.Aggregates;
 using PricingAndFairCostSplit.Domain.ValueObjects;
 using PricingAndFairCostSplit.Application.Interfaces;
 
-
 namespace PricingAndFairCostSplit.Application.Services;
 
 public class FairPricingAppService : IFairPricingAppService
@@ -19,9 +18,18 @@ public class FairPricingAppService : IFairPricingAppService
     public async Task<FairCostSplitDto> CalculateFairCostSplit(CalculateFairCostSplitCommand command)
     {
         var totalTransport = new Money(command.TotalTransportCost);
-        var fairCostSplit = new FairCostSplit(command.HaulShareId, command.PricePerKg, command.TotalKg, totalTransport);
+        var pricePerKg = new PricePerKg(command.PricePerKg);
 
-        // Here we could add farmer shares if needed, for demo it can stay empty
+        var fairCostSplit = new FairCostSplit(command.HaulShareId, pricePerKg, command.TotalKg, totalTransport);
+
+        // Calculate farmer shares
+        foreach (var farmer in command.Farmers)
+        {
+            decimal percentage = (farmer.KgDelivered / command.TotalKg) * 100;
+            var shareAmount = pricePerKg.AmountPerKg.Multiply(farmer.KgDelivered);
+
+            fairCostSplit.AddFarmerShare(new FarmerShare(farmer.FarmerId, percentage, shareAmount));
+        }
 
         await _repository.AddAsync(fairCostSplit);
 
@@ -29,7 +37,9 @@ public class FairPricingAppService : IFairPricingAppService
             fairCostSplit.HaulShareId,
             fairCostSplit.TotalRevenue.Amount,
             fairCostSplit.TotalTransportCost.Amount,
-            fairCostSplit.FarmerShares.Select(s => new CostShareDto(s.FarmerId, s.Percentage, s.ShareAmount.Amount)).ToList()
+            fairCostSplit.FarmerShares
+                .Select(s => new CostShareDto(s.FarmerId, s.Percentage, s.ShareAmount.Amount))
+                .ToList()
         );
     }
 }
