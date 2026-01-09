@@ -1,9 +1,19 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MessagingAndNotifications.Domain\MessagingAndNotifications.Domain.csproj" />
+    <ProjectReference Include="..\..\PricingAndFairCostSplit\PricingAndFairCostSplit.Domain\PricingAndFairCostSplit.Domain.csproj" />
+    <ProjectReference Include="..\..\TransportMarketplaceAndDispatch\TransportMarketplaceAndDispatch.Domain\TransportMarketplaceAndDispatch.Domain.csproj" />
+    <ProjectReference Include="..\..\TransportMarketplaceAndDispatch\TransportMarketplaceAndDispatch.Infrastructure\TransportMarketplaceAndDispatch.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\HaulShareCreationAndScheduling\HaulShareCreationAndScheduling.Infrastructure\HaulShareCreationAndScheduling.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\BatchPostingAndGrouping\BatchPostingAndGrouping.Domain\BatchPostingAndGrouping.Domain.csproj" />
+    <ProjectReference Include="..\..\BatchPostingAndGrouping\BatchPostingAndGrouping.Infrastructure\BatchPostingAndGrouping.Infrastructure.csproj" />
+  </ItemGroup>
 
 </Project>

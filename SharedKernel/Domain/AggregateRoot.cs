@@ -1,3 +1,6 @@
+using FarmersHaulShare.SharedKernel.Domain;
+
+
 namespace SharedKernel.Domain;
 
 public abstract class AggregateRoot<TId> : Entity<TId>

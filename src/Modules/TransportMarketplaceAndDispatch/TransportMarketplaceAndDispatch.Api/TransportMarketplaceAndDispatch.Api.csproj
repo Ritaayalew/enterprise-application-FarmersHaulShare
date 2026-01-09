@@ -12,6 +12,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MassTransit" Version="8.5.0" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TransportMarketplaceAndDispatch.Application\TransportMarketplaceAndDispatch.Application.csproj" />
+    <ProjectReference Include="..\TransportMarketplaceAndDispatch.Infrastructure\TransportMarketplaceAndDispatch.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\..\SharedKernel\SharedKernel.csproj" />
   </ItemGroup>
 
