@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PricingAndFairCostSplit.Application.Services;
 using PricingAndFairCostSplit.Application.Commands;
-using PricingAndFairCostSplit.Domain.ValueObjects;
+using PricingAndFairCostSplit.Application.DTOs;
 
 namespace PricingAndFairCostSplit.Api.Controllers;
 
@@ -17,23 +17,9 @@ public class FairCostSplitController : ControllerBase
     }
 
     [HttpPost("calculate")]
-    public async Task<IActionResult> Calculate([FromBody] CalculateFairCostSplitRequest request)
+    public async Task<ActionResult<FairCostSplitDto>> Calculate([FromBody] CalculateFairCostSplitCommand command)
     {
-        var command = new CalculateFairCostSplitCommand(
-            request.HaulShareId,
-            new PricePerKg(new Money(request.PricePerKg)),
-            request.TotalKg,
-            request.TotalTransportCost
-        );
-
         var result = await _service.CalculateFairCostSplit(command);
         return Ok(result);
     }
 }
-
-public record CalculateFairCostSplitRequest(
-    Guid HaulShareId,
-    decimal PricePerKg,
-    decimal TotalKg,
-    decimal TotalTransportCost
-);
