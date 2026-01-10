@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PricingAndFairCostSplit.Domain.Aggregates;
-using PricingAndFairCostSplit.Domain.Repositories;
+using PricingAndFairCostSplit.Application.Interfaces;
 
 namespace PricingAndFairCostSplit.Infrastructure.Repositories
 {
