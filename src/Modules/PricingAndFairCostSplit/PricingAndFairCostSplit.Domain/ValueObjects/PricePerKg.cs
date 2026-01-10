@@ -1,3 +1,11 @@
 namespace PricingAndFairCostSplit.Domain.ValueObjects;
 
-public record PricePerKg(Money AmountPerKg);
+public record PricePerKg
+{
+    public Money AmountPerKg { get; init; }
+
+    public PricePerKg(decimal amount)
+    {
+        AmountPerKg = new Money(amount);
+    }
+}

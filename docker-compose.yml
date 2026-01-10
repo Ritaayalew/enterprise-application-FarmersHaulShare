@@ -1,5 +1,7 @@
 version: "3.8"
+
 services:
+ 
   db:
     image: postgres:15
     container_name: keycloak-db
@@ -11,6 +13,7 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.4.7
@@ -29,5 +32,32 @@ services:
       - db
     command: ["start-dev"]
 
+  
+  farmers-postgres:
+    image: postgres:16
+    container_name: farmers-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: farmershaulshare
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"  # Use different port to avoid conflict with Keycloak's 5432
+    volumes:
+      - farmers_db_data:/var/lib/postgresql/data
+
+  # YOUR RabbitMQ (add this)
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"     # AMQP port for connection
+      - "15672:15672"   # Management UI[](http://localhost:15672)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
 volumes:
-  db_data:
+  db_data:          
+  farmers_db_data:  
